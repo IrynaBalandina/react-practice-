@@ -4,6 +4,8 @@ import { nanoid } from "nanoid";
 import AddProfileForm from "../components/AddProfileForm/AddProfileForm.jsx";
 import Section from "../components/Section.jsx";
 import Profile from "../components/Profile.jsx";
+import { setFilter } from "../redux/filters/filterReducer.js";
+import { addUser, deleteUser } from "../redux/users/usersReducer.js";
 
 
 
@@ -32,7 +34,7 @@ const UsersPage = () => {
           ...formData,
           id: nanoid(),
         };
-        const action = {type:"users/addUser",payload:finalUser }
+        const action = addUser(finalUser);
     dispatch(action);
       /*  setUsers((prevState) => [...prevState, finalUser]);*/
       };
@@ -40,7 +42,7 @@ const UsersPage = () => {
       const onDeleteProfile = (profileId) => {
         // "3"
        
-        const action = {type:"users/deleteUser", payload:profileId}
+        const action = deleteUser(profileId);
         // setUsers(updatedUsers);
         dispatch(action);
       };
@@ -76,7 +78,7 @@ const UsersPage = () => {
           placeholder="Enter keyword to search"
           value={filter}
           onChange={(event) => {
-            const action = {type:"filter/setFilter",payload:event.target.value};
+            const action = setFilter(event.target.value);
             dispatch(action);
           }
         }

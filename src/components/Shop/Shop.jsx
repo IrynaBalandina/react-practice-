@@ -1,72 +1,39 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import css from "./Shop.module.css";
-import { getProducts, searchProducts } from "../../api/products.js";
+import { apiGetProducts, apiGetProductsByQuery } from "../../redux/shop/operations.js";
 import Loader from "../Loader/Loader.jsx";
 import SearchProductForm from "../SearchProductForm/SearchProductForm.jsx";
 import { Link } from "react-router-dom";
 import { useSearchParams } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import Section from "../Section.jsx";
-
-
+import { useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
+import { selectProducts, selectProductsError, selectProductsIsLoading } from "../../redux/shop/selectors";
 
 const Shop = () => {
-  const [products, setProducts] = useState(null); // [{...}, {...}, {...}]
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  // const [searchValue, setSearchValue] = useState(null);
-  const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
+  const dispatch = useDispatch();
+  const products = useSelector(selectProducts);
+  const isLoading = useSelector(selectProductsIsLoading);
+  const error = useSelector(selectProductsError);
+
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const searchValue = searchParams.get("q");
-  console.log("shop", location);
+
   const onSearch = (searchTerm) => {
-    // setSearchValue(searchTerm);
-    setSearchParams({q: searchTerm});
+    setSearchParams({ q: searchTerm });
   };
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setIsLoading(true);
-        // const { data } = await axios.get(
-        //   "https://dummyjson.com/products?limit=10"
-        // );
-        const data = await getProducts({limit: 10});
-        setProducts(data.products);
-      } catch (error) {
-        setError(error.message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    if(!searchValue) {
-      fetchProducts();
+    if (searchValue) {
+      dispatch(apiGetProductsByQuery(searchValue));
+    } else {
+      dispatch(apiGetProducts());
     }
-    
-  }, []);
-
-  useEffect(() => {
-    if (searchValue === null) return;
-    console.log(searchValue);
-    const fetchProductsBySearchValue = async () => {
-      try {
-        setIsLoading(true);
-        const data = await searchProducts(searchValue);
-        // const { data } = await axios.get(
-        //   `https://dummyjson.com/products/search?q=${searchValue}`
-        // );
-        setProducts(data.products);
-      } catch (error) {
-        setError(error.message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchProductsBySearchValue();
-  }, [searchValue]);
-
+  }, [dispatch, searchValue]);
+ 
   return (
     <div className={css.shopPage}>
       <Section>
@@ -88,12 +55,12 @@ const Shop = () => {
           </p>
         )}
         <div className={css.list}>
-          {products !== null &&
+          {Array.isArray(products) &&
             products.map((item) => {
               return (
                 <Link
                   state={{
-                    from: location
+                    from: location,
                   }}
                   to={`/products/${item.id}`}
                   key={item.id}

@@ -1,9 +1,10 @@
-
+import { createSlice } from "@reduxjs/toolkit"
 const INITIAL_STATE = {
-users:JSON.parse(localStorage.getItem("users")) ?? []
-}
+  users: [],
+};
 
-export const usersReducer = (state = INITIAL_STATE, action)=>{
+
+/*export const usersReducer = (state = INITIAL_STATE, action)=>{
     switch(action.type){
 case "users/addUser":{
     return {
@@ -20,4 +21,19 @@ case "users/deleteUser":{
 default: return state;
     }
     
-};
+};*/
+export const usersSlice = createSlice({
+    name: "users",
+    initialState: INITIAL_STATE,
+    reducers: {
+      addUser: (state, action) => {
+        state.users.push(action.payload);
+      },
+      deleteUser: (state, action) => {
+        state.users = state.users.filter((user) => user.id !== action.payload);
+      },
+    },
+  });
+  
+  export const usersReducer = usersSlice.reducer;
+  export const { addUser, deleteUser } = usersSlice.actions;
